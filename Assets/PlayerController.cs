@@ -37,8 +37,16 @@ public class PlayerController : MonoBehaviour
         var tilemap = tileMapObject.GetComponent<Tilemap>();
 
         if (Input.GetKeyDown(KeyCode.Space)) {
-            foreach (var block in mineableBlocks) {
-                tilemap.SetTile(block, null);
+            // foreach (var block in mineableBlocks) {
+            //     tilemap.SetTile(block, null);
+            // }
+
+            var hit = Physics2D.Raycast(transform.position, -Vector2.up);
+
+            if (hit.collider != null) {
+                var cellCoord = tilemap.WorldToCell(hit.point);
+                print($"Cell coord:x {cellCoord.x}, Cell coord; y {cellCoord.y}");
+                tilemap.SetTile(cellCoord + new Vector3Int(0, -1, 0), null);
             }
         }
 
