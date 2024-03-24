@@ -7,12 +7,11 @@ using UnityEngine.Tilemaps;
 public class PlayerController : MonoBehaviour
 {
     private Rigidbody2D rb;
+    private LineRenderer ld;
 
     private  float move;
 
     public float speed;
-
-    private List<Vector3Int> mineableBlocks = new List<Vector3Int>();
 
     [SerializeField]
     private GameObject tileMapObject;
@@ -36,17 +35,19 @@ public class PlayerController : MonoBehaviour
 
         var tilemap = tileMapObject.GetComponent<Tilemap>();
 
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            // foreach (var block in mineableBlocks) {
-            //     tilemap.SetTile(block, null);
-            // }
+        Debug.DrawLine(transform.position, transform.position + -transform.up, Color.red, 0.01f);
 
-            var hit = Physics2D.Raycast(transform.position, -Vector2.up);
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            var hit = Physics2D.Raycast(transform.position, -transform.up, 1.0f);
+            print(transform.up);
 
             if (hit.collider != null) {
-                var cellCoord = tilemap.WorldToCell(hit.point);
+                var newHit = new Vector3(hit.point.x - 0.01f * hit.normal.x,
+                                         hit.point.y - 0.01f * hit.normal.y, 0);
+                var cellCoord = tilemap.WorldToCell(newHit);
+                Debug.DrawLine(new Vector2(0, 0), newHit, Color.green, 10);
                 print($"Cell coord:x {cellCoord.x}, Cell coord; y {cellCoord.y}");
-                tilemap.SetTile(cellCoord + new Vector3Int(0, -1, 0), null);
+                tilemap.SetTile(cellCoord, null);
             }
         }
 
@@ -56,26 +57,5 @@ public class PlayerController : MonoBehaviour
             print($"Cell coord:x {cellCoord.x}, Cell coord; y {cellCoord.y}");
             tilemap.SetTile(cellCoord, null);
         }
-    }
-
-    void OnCollisionEnter2D(Collision2D collision) {
-
-        print("Collision!");
-
-        var tilemap = tileMapObject.GetComponent<Tilemap>();
-
-        foreach (var contact in collision.contacts) {
-            var hitPosition = new Vector3(contact.point.x - 0.01f * contact.normal.x,
-                                          contact.point.y - 0.01f * contact.normal.y, 0);
-            var cellCoord = tilemap.WorldToCell(hitPosition);
-
-            // Bit of a hack
-            //tilemap.GetTile(cellCoord).GetComponent<Sprite>
-            mineableBlocks.Add(cellCoord + new Vector3Int(0, -1, 0));
-        }
-    }
-
-    void OnCollisionExit2D(Collision2D collision) {
-        mineableBlocks.Clear();
     }
 }
